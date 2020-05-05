@@ -17,5 +17,7 @@ urlpatterns = [
     path('book/form', book_form, name='book_form'),
     path('library/form', library_form, name='library_form'), 
     # used to capture any integer that is the route parameter, and stores that number in the book_id variable
-    path('books/<int:book_id>/', book_details, name='book')
+    path('books/<int:book_id>/', book_details, name='book'),
+    path('library/<int:library_id>/', library_details, name='library'),
+    path('librarian/<int:librarian_id>/', librarian_details, name='librarian')
 ]

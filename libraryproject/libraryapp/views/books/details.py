@@ -32,23 +32,48 @@ def get_book(book_id):
 def book_details(request, book_id):
     if request.method == 'GET':
         book = get_book(book_id)
-        template = 'books/details.html'
-        context = {
-            'book': book
-        }
+        template_name = 'books/details.html'
+        return render(request, template_name, {'book': book})
 
-        return render(request, template, context)
-    if request.method == 'POST': 
+    elif request.method == 'POST':
         form_data = request.POST
+
+        # Check if this POST is for editing a book PUT
         if (
-        "actual_method" in form_data
-        and form_data["actual_method"] == "DELETE"):
+            "actual_method" in form_data
+            and form_data["actual_method"] == "PUT"
+        ):
             with sqlite3.connect(Connection.db_path) as conn:
                 db_cursor = conn.cursor()
-                # id dependent on book_id specified
+                # SQL UPDATE TO CHANGE VALUES
                 db_cursor.execute("""
-                DELETE FROM libraryapp_book
+                UPDATE libraryapp_book
+                SET title = ?,
+                    author = ?,
+                    isbn = ?,
+                    year_published = ?,
+                    location_id = ?
                 WHERE id = ?
+                """,
+                (
+                    form_data['title'], form_data['author'],
+                    form_data['isbn'], form_data['year_published'],
+                    form_data["location"], book_id,
+                ))
+            # GO BACK TO BOOKS
+            return redirect(reverse('libraryapp:books'))
+
+        # Check if this POST is for deleting a book DELETE
+        if (
+            "actual_method" in form_data
+            and form_data["actual_method"] == "DELETE"
+        ):
+            with sqlite3.connect(Connection.db_path) as conn:
+                db_cursor = conn.cursor()
+                # SQL DELETE TO REMOVE FROM DATABASE
+                db_cursor.execute("""
+                    DELETE FROM libraryapp_book
+                    WHERE id = ?
                 """, (book_id,))
-                # redirects to link to books 
+
             return redirect(reverse('libraryapp:books'))
